@@ -3,26 +3,56 @@ import { useParams } from "react-router-dom";
 import { assets, blog_data, comments_data } from "../assets/assets";
 import Moment from "moment";
 import Loader from "../components/Loader";
+import { useAppContext } from "../Context/AppContext";
+import toast from "react-hot-toast";
+import Navbar from "../components/Navbar";
 
 const Blog = () => {
   const { id } = useParams();
 
+  const { axios } = useAppContext();
+
   const [data, setData] = useState(null);
   const [comments, setComments] = useState([]);
   const [name, setName] = useState("");
-  const [commentInput, setCommentInput] = useState("");
+  const [content, setContent] = useState("");
 
   const fetchBlogData = async () => {
-    const data = blog_data.find((item) => item._id === id);
-    setData(data);
+    try {
+      const { data } = await axios.get(`/api/blog/${id}`);
+      data.success ? setData(data.blog) : toast.error(data.message);
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const fetchComments = async () => {
-    setComments(comments_data);
+    try {
+      const { data } = await axios.post(`/api/blog/comments`, { blogId: id });
+      if (data.success) {
+        setComments(data.comments);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const addComment = async (e) => {
     e.preventDefault();
+    try {
+      const {data} = await axios.post('/api/blog/add-comment',{blog:id,name,content})
+      if(data.success){
+        toast.success(data.message)
+        setName('')
+        setContent('')
+      }else{
+        toast.error(data.error)
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
   useEffect(() => {
     fetchBlogData();
@@ -31,6 +61,7 @@ const Blog = () => {
 
   return data ? (
     <div className="relative min-h-screen px-4">
+      <Navbar/>
       {/* Background */}
       <img
         src={assets.gradientBackground}
@@ -113,13 +144,18 @@ const Blog = () => {
 
             <textarea
               placeholder="Comment"
-              value={commentInput}
-              onChange={(e) => setName(e.target.value)}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded outline-none h-48"
               required
             ></textarea>
 
-            <button className="bg-primary text-white font-medium rounded-xl mx-4 px-8 py-3" type="submit">Submit</button>
+            <button
+              className="bg-primary text-white font-medium rounded-xl mx-4 px-8 py-3"
+              type="submit"
+            >
+              Submit
+            </button>
           </form>
         </div>
 
@@ -128,14 +164,18 @@ const Blog = () => {
           <p className="font-semibold my-4">Share on social media...</p>
           <div className="flex">
             <img src={assets.facebook_icon} alt="" className="cursor-pointer" />
-            <img src={assets.googleplus_icon} alt="" className="cursor-pointer" />
+            <img
+              src={assets.googleplus_icon}
+              alt=""
+              className="cursor-pointer"
+            />
           </div>
         </div>
       </div>
     </div>
   ) : (
     <div className="text-center py-20 text-gray-600">
-      <Loader/>
+      <Loader />
     </div>
   );
 };

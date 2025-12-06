@@ -1,9 +1,24 @@
 import React, { useState } from "react";
 import { blog_data, blogCategories } from "../assets/assets";
 import BlogCard from "./BlogCard";
+import { useAppContext } from "../Context/AppContext";
 
 const BlogList = () => {
   const [menu, setMenu] = useState("All");
+
+  const { blogs, input } = useAppContext();
+
+  const filteredBlogs = () => {
+    if (input.trim() === "") {
+      return blogs;
+    }
+
+    return blogs.filter(
+      (blog) =>
+        blog.title.toLowerCase().includes(input.toLowerCase()) ||
+        blog.category.toLowerCase().includes(input.toLowerCase())
+    );
+  };
 
   return (
     <div>
@@ -25,10 +40,10 @@ const BlogList = () => {
         ))}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-24 mx-30 mt-17">
-        {blog_data
+        {filteredBlogs()
           .filter((blog) => (menu == "All" ? true : blog.category == menu))
           .map((blog) => (
-            <BlogCard key={blog._id} blog={blog}  />
+            <BlogCard key={blog._id} blog={blog} />
           ))}
       </div>
     </div>
