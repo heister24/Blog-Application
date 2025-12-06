@@ -14,7 +14,11 @@ export const adminLogin = async (req, res) => {
     }
 
     const token = jwt.sign({ email }, process.env.JWT_SECRET);
-    res.json({ token });
+    res.json({
+      success: true,
+      token,
+      message: "Login successful",
+    });
   } catch (error) {
     res.json({ failed, message: error.message });
   }
