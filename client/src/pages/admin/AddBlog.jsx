@@ -3,6 +3,7 @@ import { assets, blogCategories } from "../../assets/assets";
 import Quill from "quill";
 import { useAppContext } from "../../Context/AppContext";
 import toast from "react-hot-toast";
+import { parse } from "marked";
 
 const AddBlog = () => {
   const [image, setImage] = useState(false);
@@ -16,8 +17,27 @@ const AddBlog = () => {
 
   const { axios } = useAppContext();
   const [isAdding, setIsAdding] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const generateContent = async () => {};
+  const generateContent = async (e) => {
+    e.preventDefault();
+    if (!title) return toast.error("Please enter the title");
+    try {
+      setLoading(true);
+      const { data } = await axios.post("/api/blog/generate", {
+        prompt: title,
+      });
+      if (data.success) {
+        quillRef.current.root.innerHTML = parse(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -100,8 +120,15 @@ const AddBlog = () => {
 
         <p className="mt-4 font-medium">Description</p>
         <div className="max-w-lg min-h-[180px] pb-16 sm:pb-10 pt-2 relative border border-gray-300 rounded-md shadow-sm overflow-hidden">
+          
+          {loading && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-20">
+              <div className="w-6 h-6 border-2 border-gray-400 border-t-black rounded-full animate-spin"></div>
+            </div>
+          )}
           <div ref={editorRef} className="min-h-[150px] px-3"></div>
           <button
+            disabled={loading}
             className="absolute bottom-2 right-2 ml-2 text-xs text-white bg-black/70 px-4 py-1.5 rounded hover:bg-black cursor-pointer transition"
             type="button"
             onClick={generateContent}
