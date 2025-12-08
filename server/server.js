@@ -18,6 +18,10 @@ app.use(cors());
 app.use("/api/admin", adminRouter);
 app.use("/api/blog", blogRouter);
 
+app.get("/", (req, res) => {
+  res.send("Server is running...");
+});
+
 app.listen(Port, () => {
   console.log(`App is running on port no ${Port}`);
 });
