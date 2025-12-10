@@ -51,7 +51,7 @@ export const addBlog = async (req, res) => {
 
     res.json({ success: true, message: "Blog added successfully" });
   } catch (error) {
-    res.json({ success: false, message: "Blog publishing failed" });
+    res.json({ success: false, message: error.message });
   }
 };
 
